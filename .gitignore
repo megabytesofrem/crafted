@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/crafted
+crafted.so
+crafted.dylib
+crafted.dll
+crafted.a
+crafted.lib
+crafted-test-*
+*.exe
+*.o
+*.obj
+*.lst
