@@ -1,5 +1,6 @@
 module world.block;
-import math;
+
+import dplug.math.vector;
 
 enum BlockType : int
 {
@@ -15,5 +16,5 @@ struct Block
     BlockType type;
     bool isVisible;
 
-    vec3 position;
+    vec3f position;
 }

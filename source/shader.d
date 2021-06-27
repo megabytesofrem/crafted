@@ -1,17 +1,19 @@
 module shader;
 
 import std.stdio : writefln;
-import std.string : toStringz;
+import std.string : toStringz, fromStringz;
 import std.file : readText;
 
-import derelict.opengl;
-import derelict.glfw3.glfw3;
+import dplug.math.matrix;
+import bindbc.opengl;
 
-/// Manage a shader loaded from a file
+/**
+    Manage a vertex or fragment shader loaded from a file
+*/
 struct Shader
 {
-    private int _program;
-    private uint _vertexShader, _fragmentShader;
+    private GLint _program;
+    private GLuint _vertexShader, _fragmentShader;
 
     // Properties
     public @property int program() { return this._program; }
@@ -26,53 +28,68 @@ struct Shader
 
     public void loadVertexSource(string vertexPath) {
         auto source = readText(vertexPath);
-        const char* csource = cast(const char*)source.toStringz;
+        const char* csource = source.toStringz;
     
+        writefln("source: %s", csource.fromStringz);
+
         // compile the vertex shader
         _vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, 1, &csource, null);
+        glShaderSource(_vertexShader, 1, &csource, null);
+
+        glCompileShader(_vertexShader);
 
         int success;
-        char[512] infoLog;
-        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+        glGetShaderiv(_vertexShader, GL_COMPILE_STATUS, &success);
 
         // check for errors
         if (!success) {
-            glGetShaderInfoLog(vertexShader, 512, null, infoLog.ptr);
-            writefln("compilation failed for vertex shader: %s", infoLog);
+            int bufflen;
+            glGetShaderiv(_vertexShader, GL_INFO_LOG_LENGTH, &bufflen);
+
+            char[] buff = new char[bufflen];
+            glGetShaderInfoLog(_vertexShader, bufflen, null, buff.ptr);
+            writefln!"compilation failed for vertex shader: %s"(buff);
         }
+
     }
 
     public void loadFragmentSource(string fragmentPath) {
         auto source = readText(fragmentPath);
-        const char* csource = cast(const char*)source.toStringz;
+        const char* csource = source.toStringz;
     
         // compile the fragment shader
         _fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader, 1, &csource, null);
+        glShaderSource(_fragmentShader, 1, &csource, null);
+        glCompileShader(_fragmentShader);
 
         int success;
-        char[512] infoLog;
-        glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+        glGetShaderiv(_fragmentShader, GL_COMPILE_STATUS, &success);
 
         // check for errors
         if (!success) {
-            glGetShaderInfoLog(fragmentShader, 512, null, infoLog.ptr);
-            writefln("compilation failed for fragment shader: %s", infoLog);
+            int bufflen;
+            glGetShaderiv(_fragmentShader, GL_INFO_LOG_LENGTH, &bufflen);
+
+            char[] buff = new char[bufflen];
+            glGetShaderInfoLog(_fragmentShader, bufflen, null, buff.ptr);
+            writefln!"compilation failed for fragment shader: %s"(buff);
         }
     }
 
-    public void applyTransformation4f(string uniform, mat4 transform) {
+    public void applyTransformation(string uniform, mat4f transform) {
+        // Apply a matrix transformation to the shader
         this.use();
 
-        int location = glGetUniformLocation(program, uniform);
+        int location = glGetUniformLocation(program, uniform.toStringz);
         if (location != -1)
-            glUniformMatrix4fv(location, 1, ROW_MAJOR, transform.value_ptr);
+            glUniformMatrix4fv(location, 1, GL_TRUE, transform.ptr);
     }
 
     public void createProgram() {
+        // Create the program
         _program = glCreateProgram();
 
+        // Link the vertex and fragment shaders together
         glAttachShader(program, vertexShader);
         glAttachShader(program, fragmentShader);
         glLinkProgram(program);
