@@ -1,20 +1,15 @@
-module renderer.quadrenderer;
+module renderer.testrenderer;
 
-
-import shader;
+import engine.shader;
 import std.conv : to;
 import std.stdio;
 
 import bindbc.opengl;
 
-/** Experimental quad renderer to try and play with OpenGL more */
-class QuadRenderer
+class TestRenderer
 {
     GLuint vao; // vertex array
     GLuint vbo; // vertex buffer object (sent to gpu)
-    GLuint vboColors;
-
-    GLint colorAttrib;
 
     GLfloat[] vertices = [
         // position
@@ -30,14 +25,7 @@ class QuadRenderer
          0.5f,  0.5f, 0.5f, // top right
     ];
 
-    GLfloat[] colors = [
-        1.0, 0.0, 0.0, // R
-        0.0, 1.0, 0.0, // G
-        0.0, 0.0, 0.0, // B
-        1.0, 1.0, 0.0, // Y?
-    ];
-
-    public this(Shader shader) {
+    public this() {
         // generate vao
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
@@ -46,26 +34,14 @@ class QuadRenderer
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, vertices[0].sizeof * vertices.length, vertices.ptr, GL_STATIC_DRAW);
-
-        // bind colors vbo
-        glGenBuffers(1, &vboColors);
-        glBindBuffer(GL_ARRAY_BUFFER, vboColors);
-        glBufferData(GL_ARRAY_BUFFER, colors.sizeof, colors.ptr, GL_STATIC_DRAW);
-
-        colorAttrib = glGetAttribLocation(shader.program, "v_color");
     }
 
     public void render(Shader shader) {
         glBindVertexArray(vao);
 
         // we have 3 floats for x, y, z position
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, null);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * float.sizeof, cast(void*)0);
         glEnableVertexAttribArray(0);
-
-        // copy color information and tell opengl the layout
-        glEnableVertexAttribArray(colorAttrib);
-        glBindBuffer(GL_ARRAY_BUFFER, vboColors);
-        glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, 0, null);
 
         shader.use();
 

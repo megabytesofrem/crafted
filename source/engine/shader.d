@@ -1,4 +1,4 @@
-module shader;
+module engine.shader;
 
 import std.stdio : writefln;
 import std.string : toStringz, fromStringz;
