@@ -3,12 +3,18 @@ module game;
 import bindbc.opengl;
 import bindbc.glfw;
 
+import dplug.math.vector;
+import dplug.math.matrix;
+
+
+import engine.camera;
 import engine.shader;
 import engine.window;
 import engine.texture;
 
 import render.blockrenderer;
 
+Camera cam;
 Shader mainShader;
 Texture t;
 
@@ -29,7 +35,14 @@ class GameWindow : Window
         glEnable(GL_DEPTH_TEST);
         t = Texture.loadBitmap("textures/grass.bmp");
 
+        cam = Camera(30.0f, this.width, this.height);
+        cam.lookAt(vec3f(0, 0, 3), vec3f(0, 0, 0), vec3f(0, 1, 0));
+
+        mat4f model = mat4f.identity();
+        mat4f mvp = cam.projection * cam.view * model;
+
         mainShader.use();
+        mainShader.setUniform("mvp", mvp);
     }
 
     override void onWindowDraw() {
