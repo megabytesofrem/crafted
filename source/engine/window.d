@@ -7,9 +7,9 @@ import bindbc.opengl;
 import bindbc.glfw;
 import engine.shader;
 
-/**
+/++
     Lightweight wrapper around a native GLFW window
-*/
++/
 class Window
 {
     /// The underlying native GLFW window
@@ -20,18 +20,21 @@ class Window
     public @property int width() { return this._width; }
     public @property int height() { return this._height; }
 
-    /** Returns the underlying GLFW window pointer */
+    /// Returns the underlying GLFW window pointer
     public @property GLFWwindow* glfwWindow() { return this._window; }
     
-    public @property bool closed() {
+    private @property bool closed() {
         return cast(bool) glfwWindowShouldClose(_window);
     }
 
+    /++
+        Create a window with the specified width and height.
+     +/
     void create(int width, int height, string title) {
         this._width = width;
         this._height = height;
 
-        GLFWSupport hasGlfw = loadGLFW();
+        const hasGlfw = loadGLFW();
         if (hasGlfw != glfwSupport) {
             writefln("GLFW failed to load!");
         }
@@ -51,11 +54,14 @@ class Window
         }
 
         glfwMakeContextCurrent(_window);
-        GLSupport hasGl = loadOpenGL();
+        const hasGl = loadOpenGL();
         
         onWindowCreate();
     }
 
+    /++ 
+        Run the main event loop and call our event handlers.
+    +/
     void runLoop() {
         writeln(_window != null);
         while (!closed) {

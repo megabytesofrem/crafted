@@ -4,14 +4,15 @@
 	],
 	"copyright": "Copyright © 2021, abi",
 	"dependencies": {
-		"bindbc-opengl": "~>0.17.1",
 		"bindbc-glfw": "~>0.13.0",
-		"dplug:math": "~>11.0.14"
+		"bindbc-opengl": "~>0.17.1",
+		"dplug:math": "~>11.0.14",
+		"dlib": "~>0.22.0"
 	},
-	"versions": [
-		"GL_30"
-	],
 	"description": "Minecraft clone written in D",
 	"license": "proprietary",
-	"name": "crafted"
+	"name": "crafted",
+	"versions": [
+		"GL_30"
+	]
 }
