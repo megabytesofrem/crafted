@@ -1,6 +1,7 @@
 module render.blockrenderer;
 
 import engine.shader;
+import render.vertex;
 import render.blockmesh;
 
 import std.conv : to;
@@ -10,6 +11,8 @@ import bindbc.opengl;
 
 class BlockRenderer
 {
+    import engine.primitives : Vertex;
+
     private Shader shader;
 
     /// The associated block mesh
@@ -20,19 +23,21 @@ class BlockRenderer
     private GLuint vbo; // vertex buffer object (sent to gpu)
     private GLuint ebo;
 
-    private GLfloat[] vertices;
+    private Vertex[] vertices;
     private GLuint[] indices;
 
-    public this() {
+    public this()
+    {
         // generate vao
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
 
-        this.mesh.addFaces([BlockFace.front, 
-                            BlockFace.back, 
-                            BlockFace.bottom,
-                            BlockFace.left,
-                            BlockFace.right]);
+        this.mesh.addFace(BlockFace.front);
+
+        this.mesh.addFace(BlockFace.bottom);
+        this.mesh.addFace(BlockFace.back);
+        this.mesh.addFace(BlockFace.left);
+        this.mesh.addFace(BlockFace.right);
 
         writefln("faces: %('%s', %)", mesh.faces);
 
@@ -42,29 +47,31 @@ class BlockRenderer
         // generate and bind vbo
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices[0].sizeof * vertices.length, vertices.ptr, GL_STATIC_DRAW);
-    
+        glBufferData(GL_ARRAY_BUFFER, Vertex.sizeof * vertices.length,
+                vertices.ptr, GL_STATIC_DRAW);
+
         glGenBuffers(1, &ebo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices[0].sizeof * indices.length, indices.ptr, GL_STATIC_DRAW);
-    
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.sizeof * indices.length,
+                indices.ptr, GL_STATIC_DRAW);
 
         // we have 3 floats for x, y, z position
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * float.sizeof, cast(void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, Vertex.sizeof,
+                cast(void*) Vertex.position.offsetof);
         glEnableVertexAttribArray(0);
 
         // .. and our texture coords
-
-
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * float.sizeof, cast(void*)(3 * float.sizeof));
-        glEnableVertexAttribArray(1);    
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, Vertex.sizeof,
+                cast(void*) Vertex.texture.offsetof);
+        glEnableVertexAttribArray(1);
     }
 
-    public void render(Shader shader) {
+    public void render(Shader shader)
+    {
         //glBindVertexArray(vao);
         shader.use();
 
-        glDrawElements(GL_TRIANGLES, vertices.length.to!int, GL_UNSIGNED_INT, null);
+        glDrawElements(GL_TRIANGLES, indices.length.to!int, GL_UNSIGNED_INT, null);
         //glDrawArrays(GL_TRIANGLES, 0, vertices.length.to!int);
     }
 }

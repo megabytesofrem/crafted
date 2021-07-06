@@ -12,6 +12,6 @@ void main()
 {
 	window = new GameWindow();
 	window.create(640, 480, "crafted v0.0.01");
-	
+
 	window.runLoop();
 }

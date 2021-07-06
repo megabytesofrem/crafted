@@ -15,15 +15,20 @@ struct Shader
     // Properties
 
     /// The compiled shader program
-    public @property int program() { return this._program; }
+    public @property int program()
+    {
+        return this._program;
+    }
 
     /// A reference to the compiled vertex shader
-    public @property uint vertexShader() {
+    public @property uint vertexShader()
+    {
         return this._vertexShader;
     }
 
     /// A reference to the compiled fragment shader
-    public@property uint fragmentShader() {
+    public @property uint fragmentShader()
+    {
         return this._fragmentShader;
     }
 
@@ -31,7 +36,8 @@ struct Shader
         Load the vertex and fragment shaders from the two specified paths and
         link and compile them together into a shader program.
      +/
-    public void loadSource(string vtxPath, string fragPath) {
+    public void loadSource(string vtxPath, string fragPath)
+    {
         const(char*) vtxSource = readText(vtxPath).toStringz;
         const(char*) frgSource = readText(fragPath).toStringz;
 
@@ -70,21 +76,24 @@ struct Shader
         Note: shaderType can be either GL_VERTEX_SHADER or GL_FRAGMENT_SHADER. Anything else
         is invalid.
      +/
-    public void writeInfoLog(uint shaderType, uint shaderId) {
+    public void writeInfoLog(uint shaderType, uint shaderId)
+    {
         int len;
         glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &len);
 
-        if (len > 0) {
+        if (len > 0)
+        {
             char[] buf = new char[len];
             glGetShaderInfoLog(shaderId, len, null, buf.ptr);
 
-            final switch (shaderType) {
-                case GL_VERTEX_SHADER:
-                    writefln("Compile failed for vertex shader: %s", buf);
-                    break;
-                case GL_FRAGMENT_SHADER:
-                    writefln("Compile failed for fragment shader: %s", buf);
-                    break;    
+            final switch (shaderType)
+            {
+            case GL_VERTEX_SHADER:
+                writefln("Compile failed for vertex shader: %s", buf);
+                break;
+            case GL_FRAGMENT_SHADER:
+                writefln("Compile failed for fragment shader: %s", buf);
+                break;
             }
         }
     }
@@ -92,19 +101,22 @@ struct Shader
     /++
         Set a uniform on the shader to a specified value.
      +/
-    public void setUniform(string uniform, int value) {
+    public void setUniform(string uniform, int value)
+    {
         const loc = glGetUniformLocation(this.program, uniform.toStringz);
         glUniform1i(loc, value);
     }
 
     /// ditto
-    public void setUniform(string uniform, float value) {
+    public void setUniform(string uniform, float value)
+    {
         const loc = glGetUniformLocation(this.program, uniform.toStringz);
         glUniform1f(loc, value);
     }
 
     /// ditto
-    public void setUniform(string uniform, mat4f matrix) {
+    public void setUniform(string uniform, mat4f matrix)
+    {
         const loc = glGetUniformLocation(this.program, uniform.toStringz);
         glUniformMatrix4fv(loc, 1, GL_FALSE, matrix.transposed.ptr);
     }
@@ -112,11 +124,13 @@ struct Shader
     /++ 
         Set the shader as the current active shader and tell OpenGL to use it.
      +/
-    public void use() {
+    public void use()
+    {
         glUseProgram(program);
     }
 
-    private void freeShaders() {
+    private void freeShaders()
+    {
         // free the shader manually after being used
         glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
