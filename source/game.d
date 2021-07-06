@@ -33,12 +33,14 @@ class GameWindow : Window
 
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
-        t = Texture.loadBitmap("textures/grass.bmp");
+        t = Texture.loadBitmap("textures/cobble.bmp");
 
-        cam = Camera(30.0f, this.width, this.height);
+        cam = Camera(80.0f, this.width, this.height);
         cam.lookAt(vec3f(0, 0, 3), vec3f(0, 0, 0), vec3f(0, 1, 0));
 
-        mat4f model = mat4f.identity();
+        mat4f rotate = mat4f.rotateY(toRadians(-45.0f));
+
+        mat4f model = mat4f.identity() * rotate;
         mat4f mvp = cam.projection * cam.view * model;
 
         mainShader.use();

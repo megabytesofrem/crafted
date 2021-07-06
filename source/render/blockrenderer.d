@@ -1,6 +1,8 @@
 module render.blockrenderer;
 
 import engine.shader;
+import render.blockmesh;
+
 import std.conv : to;
 import std.stdio;
 
@@ -8,70 +10,34 @@ import bindbc.opengl;
 
 class BlockRenderer
 {
-    Shader sh;
+    private Shader shader;
 
-    GLuint vao; // vertex array
-    GLuint vbo; // vertex buffer object (sent to gpu)
+    /// The associated block mesh
+    public BlockMesh mesh;
 
-    GLuint ebo;
+    // GL internals
+    private GLuint vao; // vertex array
+    private GLuint vbo; // vertex buffer object (sent to gpu)
+    private GLuint ebo;
 
-    GLfloat[] vertices = [
-        // positions        UV coords
-
-        // Front face
-        -1.0, -1.0,  1.0,   0.0, 0.0,   // bottom left,       (+x and +y)
-        1.0, -1.0,  1.0,    0.0, 1.0,   // bottom right     (+x and -y)
-        1.0,  1.0,  1.0,    1.0, 1.0,   // top right      (-x and -y)
-        -1.0,  1.0,  1.0,   1.0, 0.0,   // top left     (+x and -y)
-
-        // Back face
-        -1.0, -1.0, -1.0,   0.0, 0.0,
-        -1.0,  1.0, -1.0,   0.0, 1.0,
-        1.0,  1.0, -1.0,    1.0, 1.0,
-        1.0, -1.0, -1.0,    1.0, 0.0,
-
-        // Top face
-        -1.0,  1.0, -1.0,   1.0, 1.0,
-        -1.0,  1.0,  1.0,   1.0, 0.0,
-        1.0,  1.0,  1.0,    0.0, 0.0,
-        1.0,  1.0, -1.0,    0.0, 1.0,
-
-        // Bottom face
-        -1.0, -1.0, -1.0,   1.0, 1.0,
-        1.0, -1.0, -1.0,    1.0, 0.0,
-        1.0, -1.0,  1.0,    0.0, 0.0,
-        -1.0, -1.0,  1.0,   0.0, 1.0,
-
-        // Right face
-        1.0, -1.0, -1.0,    1.0, 1.0,
-        1.0,  1.0, -1.0,    1.0, 0.0,
-        1.0,  1.0,  1.0,    0.0, 0.0,
-        1.0, -1.0,  1.0,    0.0, 1.0,
-
-        // Left face
-        -1.0, -1.0, -1.0,   1.0, 1.0,
-        -1.0, -1.0,  1.0,   1.0, 0.0,
-        -1.0,  1.0,  1.0,   0.0, 0.0,
-        -1.0,  1.0, -1.0,   0.0, 1.0,  
-    ];
-
-    GLuint[] indices = [
-        0, 1, 2,        0, 2, 3,    // front
-        4, 5, 6,        4, 6, 7,    // back
-        8,  9,  10,     8,  10, 11, // top
-        12, 13, 14,     12, 14, 15, // bottom
-        16, 17, 18,     16, 18, 19, // right
-        20, 21, 22,     20, 22, 23, // left       
-    ];
-
-    public void bindShader(Shader sh) {
-        this.sh = sh;
-    }
+    private GLfloat[] vertices;
+    private GLuint[] indices;
 
     public this() {
         // generate vao
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
+
+        this.mesh.addFaces([BlockFace.front, 
+                            BlockFace.back, 
+                            BlockFace.bottom,
+                            BlockFace.left,
+                            BlockFace.right]);
+
+        writefln("faces: %('%s', %)", mesh.faces);
+
+        this.vertices = mesh.vertices;
+        this.indices = mesh.indices;
 
         // generate and bind vbo
         glGenBuffers(1, &vbo);

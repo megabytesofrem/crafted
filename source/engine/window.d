@@ -30,7 +30,7 @@ class Window
     /++
         Create a window with the specified width and height.
      +/
-    void create(int width, int height, string title) {
+    public void create(int width, int height, string title) {
         this._width = width;
         this._height = height;
 
@@ -62,7 +62,7 @@ class Window
     /++ 
         Run the main event loop and call our event handlers.
     +/
-    void runLoop() {
+    public void runLoop() {
         writeln(_window != null);
         while (!closed) {
             onWindowDraw();
@@ -74,11 +74,11 @@ class Window
     }
 
     /// Event stubs for onWindowCreate, onWindowDraw etc
-    void onWindowCreate() {}
+    public void onWindowCreate() {}
 
     /// ditto
-    void onWindowDraw() {}
+    public void onWindowDraw() {}
 
     /// ditto
-    void onWindowClosed() {}
+    public void onWindowClosed() {}
 }
