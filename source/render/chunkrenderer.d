@@ -3,19 +3,22 @@ module render.chunkrenderer;
 import engine.shader;
 import render.blockmesh;
 
+import dplug.math.vector;
 import bindbc.opengl;
 
 class ChunkRenderer
 {
+    import std.stdio : writefln;
+
     import std.conv : to;
     import world.blockdata : Block, BlockType;
     import engine.primitives : Vertex;
 
-    private enum chunkWidth = 5;
-    private enum chunkHeight = 4;
-    private enum chunkDepth = 4;
+    private enum chunkWidth = 2;
+    private enum chunkHeight = 2;
+    private enum chunkDepth = 1;
 
-    private ubyte[chunkDepth][chunkHeight][chunkWidth] chunk;
+    private ubyte[chunkWidth][chunkWidth][chunkWidth] chunk;
 
     private Shader shader;
     public BlockMesh mesh;
@@ -34,19 +37,20 @@ class ChunkRenderer
         ubyte block = 1;
         // Generate a mesh
         this.mesh.buildFace(BlockFace.front);
-        this.mesh.buildFace(BlockFace.bottom);
-        this.mesh.buildFace(BlockFace.top);
+        // this.mesh.buildFace(BlockFace.bottom);
+        // this.mesh.buildFace(BlockFace.top);
         //this.mesh.buildFace(BlockFace.back);
-        this.mesh.buildFace(BlockFace.left);
-        //this.mesh.buildFace(BlockFace.right);
+        // this.mesh.buildFace(BlockFace.left);
+        // this.mesh.buildFace(BlockFace.right);
 
-        foreach (x; 0 .. chunkWidth)
+        for (int z = 0; z < chunkWidth; z++)
         {
-            foreach (y; 0 .. chunkHeight)
+            for (int y = 0; y < chunkWidth; y++)
             {
-                foreach (z; 0 .. chunkDepth)
+                for (int x = 0; x < chunkWidth; x++)
                 {
                     chunk[x][y][z] = block;
+                    //writefln("x: %d y: %d z: %d", x, y, z);
 
                     // Loop through the vertices
                     foreach (ref vtx; this.mesh.vertices)
@@ -61,6 +65,11 @@ class ChunkRenderer
                 }
             }
         }
+
+        foreach (vtx; vertices)
+        {
+            writefln("v: %f\t%f\t%f", vtx.position.x, vtx.position.y, vtx.position.z);
+        }
     }
 
     public void setupRenderer()
@@ -70,6 +79,12 @@ class ChunkRenderer
         glBindVertexArray(vao);
 
         this.generate();
+
+        writefln("vertices (setupRenderer):");
+        foreach (vtx; vertices)
+        {
+            writefln("v: %f\t%f\t%f", vtx.position.x, vtx.position.y, vtx.position.z);
+        }
     
         // Generate and bind VBO
         glGenBuffers(1, &vbo);
