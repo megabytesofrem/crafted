@@ -17,4 +17,14 @@ struct Block
     bool isVisible;
 
     vec3f position;
+
+    this(BlockType type, bool isVisible, vec3f position)
+    {
+        import std.stdio : writefln;
+        writefln("block pos (ctor): %f,%f,%f", position.x, position.y, position.z);
+
+        this.type = type;
+        this.isVisible = isVisible;
+        this.position = position;
+    }
 }

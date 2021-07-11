@@ -20,14 +20,21 @@ Texture t;
 
 class GameWindow : Window
 {
+    float deltaTime = 0.0f;
+    float lastFrame = 0.0f;
+
     private BlockRenderer rend;
     private ChunkRenderer chunkRender;
 
     override void onWindowCreate()
     {
+        import std.stdio : writeln;
+
+        chunkRender = new ChunkRenderer();
+
         // Load the shader
         mainShader.loadSource("shaders/shader.vs", "shaders/shader.fs");
-        rend = new BlockRenderer();
+        //rend = new BlockRenderer();
 
         // Set the viewport size
         // glfwSwapInterval()
@@ -35,40 +42,88 @@ class GameWindow : Window
 
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
-        t = Texture.loadBitmap("textures/grass.bmp");
+        glEnable(GL_CULL_FACE);
+
+        t = Texture.loadBitmap("textures/brick.bmp");
 
         cam = Camera(80.0f, this.width, this.height);
         cam.lookAt(vec3f(0, 0, 3), vec3f(0, 0, 0), vec3f(0, 1, 0));
 
-        mat4f rotate = mat4f.rotateY(toRadians(-45.0f));
+        //mat4f rotate = mat4f.rotateZ(toRadians(-45.0f));
+        writeln(chunkRender);
+        chunkRender.mesh.modelMatrix = mat4f.identity();
+        chunkRender.mesh.modelMatrix.scale(vec3f(0.2f, 0.2f, 0.2f));
 
-        rend.mesh.modelMatrix = mat4f.identity() * rotate;
-        rend.mesh.modelMatrix.scale(vec3f(0.5f, 0.5f, 0.5f));
-
-        mat4f mvp = cam.projection * cam.view * rend.mesh.modelMatrix;
+        mat4f mvp = cam.projection * cam.view * chunkRender.mesh.modelMatrix;
 
         mainShader.use();
         mainShader.setUniform("mvp", mvp);
 
-        chunkRender = new ChunkRenderer();
-        chunkRender.generateChunk(5, 5, 5);
         chunkRender.setupRenderer();
+        // chunkRender.generateChunk(5, 5, 5);
+        // chunkRender.setupRenderer();
     }
 
     void handleKeyboard()
     {
         import core.stdc.stdlib : exit;
+        import dplug.math.vector : cross;
+
+        float cameraSpeed = 2.0f * deltaTime;
 
         if (glfwGetKey(this.glfwWindow, GLFW_KEY_ESCAPE))
         {
             glfwTerminate();
             exit(0);
         }
+
+        // Camera movement
+        if (glfwGetKey(glfwWindow, GLFW_KEY_W) == GLFW_PRESS)
+        {
+            cam.cameraPosition += cameraSpeed * cam.front;
+        }
+    
+        if (glfwGetKey(glfwWindow, GLFW_KEY_S) == GLFW_PRESS)
+        {
+            cam.cameraPosition -= cameraSpeed * cam.front;
+        }
+
+        if (glfwGetKey(glfwWindow, GLFW_KEY_A) == GLFW_PRESS) 
+        {
+            cam.cameraPosition -= cross(cam.front, cam.up).normalized * cameraSpeed;
+        }
+
+        if (glfwGetKey(glfwWindow, GLFW_KEY_D) == GLFW_PRESS) 
+        {
+            cam.cameraPosition += cross(cam.front, cam.up).normalized * cameraSpeed;
+        }
+
+        if (glfwGetKey(glfwWindow, GLFW_KEY_Q) == GLFW_PRESS)
+        {
+            cam.cameraPosition += cam.up.normalized * cameraSpeed;
+        }
+
+        if (glfwGetKey(glfwWindow, GLFW_KEY_E) == GLFW_PRESS)
+        {
+            cam.cameraPosition -= cam.up.normalized * cameraSpeed;
+        }
     }
 
     override void onWindowDraw()
     {
+        // Calculate delta time
+        float current = glfwGetTime();
+        deltaTime = current - lastFrame;
+        lastFrame = current;
+
         handleKeyboard();
+
+        // Camera stuff
+        cam.lookAtCamera();
+
+        mat4f mvp = cam.projection * cam.view * chunkRender.mesh.modelMatrix;
+        mainShader.setUniform("mvp", mvp);
+
 
         glClearColor(0.0, 0.0, 0.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -77,6 +132,7 @@ class GameWindow : Window
         mainShader.setUniform("tex", 0);
 
         chunkRender.render(mainShader);
+        //chunkRender.render(mainShader);
 
         glfwSwapBuffers(glfwWindow);
         glfwWaitEvents();

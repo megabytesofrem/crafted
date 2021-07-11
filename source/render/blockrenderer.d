@@ -1,7 +1,7 @@
 module render.blockrenderer;
 
 import engine.shader;
-import render.vertex;
+import engine.primitives;
 import render.blockmesh;
 
 import std.conv : to;
@@ -24,36 +24,31 @@ class BlockRenderer
     private GLuint ebo;
 
     private Vertex[] vertices;
-    private GLuint[] indices;
 
     public this()
     {
+        this.mesh = new BlockMesh();
+
         // generate vao
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
 
-        this.mesh.addFace(BlockFace.front);
-
-        this.mesh.addFace(BlockFace.bottom);
-        this.mesh.addFace(BlockFace.back);
-        this.mesh.addFace(BlockFace.left);
-        this.mesh.addFace(BlockFace.right);
+        // this.mesh.buildFace(BlockFace.front);
+        // this.mesh.buildFace(BlockFace.bottom);
+        // this.mesh.buildFace(BlockFace.top);
+        // this.mesh.buildFace(BlockFace.back);
+        // this.mesh.buildFace(BlockFace.left);
+        this.mesh.buildFace(BlockFace.right);
 
         writefln("faces: %('%s', %)", mesh.faces);
 
-        this.vertices = mesh.vertices;
-        this.indices = mesh.indices;
+        this.vertices = mesh.builder.vertices;
 
         // generate and bind vbo
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, Vertex.sizeof * vertices.length,
                 vertices.ptr, GL_STATIC_DRAW);
-
-        glGenBuffers(1, &ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.sizeof * indices.length,
-                indices.ptr, GL_STATIC_DRAW);
 
         // we have 3 floats for x, y, z position
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, Vertex.sizeof,
@@ -71,7 +66,7 @@ class BlockRenderer
         //glBindVertexArray(vao);
         shader.use();
 
-        glDrawElements(GL_TRIANGLES, indices.length.to!int, GL_UNSIGNED_INT, null);
-        //glDrawArrays(GL_TRIANGLES, 0, vertices.length.to!int);
+        //glDrawElements(GL_TRIANGLES, indices.length.to!int, GL_UNSIGNED_INT, null);
+        glDrawArrays(GL_TRIANGLES, 0, vertices.length.to!int);
     }
 }

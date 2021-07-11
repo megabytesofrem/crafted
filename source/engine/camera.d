@@ -21,6 +21,10 @@ import bindbc.opengl;
  */
 struct Camera
 {
+    public vec3f cameraPosition = vec3f(0, 0, 3);
+    public vec3f front = vec3f(0, 0, -1);
+    public vec3f up = vec3f(0, 1, 0); 
+
     private mat4f _projection;
     private mat4f _view;
 
@@ -55,5 +59,10 @@ struct Camera
     public void lookAt(vec3f eye, vec3f target, vec3f up)
     {
         this._view = mat4f.lookAt(eye, target, up);
+    }
+
+    public void lookAtCamera()
+    {
+        this._view = mat4f.lookAt(cameraPosition, cameraPosition + front, up);
     }
 }

@@ -17,30 +17,24 @@ enum BlockFace : string
     right = "right"
 }
 
-struct BlockMesh
+class BlockMesh
 {
-    private Vertex[] _vertices;
-    private GLuint[] _indices;
+    import util.vertexbuilder : VertexBuilder;
 
     public mat4f modelMatrix;
+    public VertexBuilder builder;
 
     private BlockFace[] _faces;
+
+    this()
+    {
+        this.builder = new VertexBuilder();
+    }
 
     /// The vertices in the mesh
     public @property Vertex[] vertices()
     {
-        return this._vertices;
-    }
-
-    /// The indices (element buffer array indices) in the mesh
-    public @property GLuint[] indices()
-    {
-        return this._indices;
-    }
-
-    public @property void vertices(Vertex[] newVertices)
-    {
-        this._vertices = newVertices;
+        return this.builder.vertices;
     }
 
     /// The (visible) faces in the mesh
@@ -49,98 +43,110 @@ struct BlockMesh
         return this._faces;
     }
 
-    private Vertex[] verticesForFace(BlockFace face)
+    public void buildFace(BlockFace face)
     {
         Vertex[] verts;
+        enum z = 1;
 
-        final switch (face)
+        switch (face)
         {
         case BlockFace.front:
-            //        position                         UV
-            verts ~= Vertex(vec3f(-1, -1, 1), vec2f(0.0, 0.0)); // bottom left
-            verts ~= Vertex(vec3f(1, -1, 1), vec2f(0.0, 1.0)); // bottom right
-            verts ~= Vertex(vec3f(1, 1, 1), vec2f(1.0, 1.0)); // top right
-            verts ~= Vertex(vec3f(-1, 1, 1), vec2f(1.0, 0.0)); // top left
+            // dfmt off
+            builder.push([
+                Vertex(vec3f(-1, -1, z), vec2f(0.0, 1.0)), // 0
+                Vertex(vec3f( 1, -1, z), vec2f(1.0, 1.0)), // 1
+                Vertex(vec3f( 1,  1, z), vec2f(1.0, 0.0)), // 2
+                
+                Vertex(vec3f(-1, -1, z), vec2f(0.0, 1.0)), // 0
+                Vertex(vec3f( 1,  1, z), vec2f(1.0, 0.0)), // 2
+                Vertex(vec3f(-1,  1, z), vec2f(0.0, 0.0)), // 3
+            ]);
+            // dfmt on
             break;
         case BlockFace.back:
-            verts ~= Vertex(vec3f(-1, -1, -1), vec2f(0.0, 0.0));
-            verts ~= Vertex(vec3f(-1, 1, -1), vec2f(0.0, 1.0));
-            verts ~= Vertex(vec3f(1, 1, -1), vec2f(1.0, 1.0));
-            verts ~= Vertex(vec3f(1, -1, -1), vec2f(1.0, 0.0));
+            // dfmt off
+            builder.push([
+                Vertex(vec3f( 1,  1, -z), vec2f(1.0, 0.0)),// 6
+                Vertex(vec3f(-1,  1, -z), vec2f(0.0, 0.0)),// 5
+                Vertex(vec3f(-1, -1, -z), vec2f(0.0, 1.0)),// 4
+
+                Vertex(vec3f( 1,  -1, -z), vec2f(1.0, 1.0)),// 7
+                Vertex(vec3f( 1,   1, -z), vec2f(1.0, 0.0)),// 6
+                Vertex(vec3f(-1,  -1, -z), vec2f(0.0, 1.0)),// 4
+
+            ]);
+            // dfmt on
             break;
         case BlockFace.top:
-            verts ~= Vertex(vec3f(-1, 1, -1), vec2f(0.0, 0.0));
-            verts ~= Vertex(vec3f(-1, 1, 1), vec2f(0.0, 1.0));
-            verts ~= Vertex(vec3f(1, 1, 1), vec2f(1.0, 1.0));
-            verts ~= Vertex(vec3f(1, 1, -1), vec2f(1.0, 0.0));
+            // dfmt off
+            builder.push([
+                Vertex(vec3f( 1, 1,  z), vec2f(1.0, 0.0)),// 10
+                Vertex(vec3f(-1, 1,  z), vec2f(0.0, 0.0)),// 9
+                Vertex(vec3f(-1, 1, -z), vec2f(0.0, 1.0)),// 8
+
+                Vertex(vec3f( 1, 1, -z), vec2f(1.0, 1.0)),// 11
+                Vertex(vec3f( 1, 1,  z), vec2f(1.0, 0.0)),// 10
+                Vertex(vec3f(-1, 1, -z), vec2f(0.0, 1.0)),// 8
+
+            ]);
+            // dfmt on
             break;
         case BlockFace.bottom:
-            verts ~= Vertex(vec3f(-1, -1, -1), vec2f(0.0, 0.0));
-            verts ~= Vertex(vec3f(1, -1, -1), vec2f(0.0, 1.0));
-            verts ~= Vertex(vec3f(1, -1, 1), vec2f(1.0, 1.0));
-            verts ~= Vertex(vec3f(-1, -1, 1), vec2f(1.0, 0.0));
+            // dfmt off
+            builder.push([
+                Vertex(vec3f(-1, -1, -z), vec2f(0.0, 1.0)),// 9
+                Vertex(vec3f(-1, -1, z), vec2f(0.0, 0.0)), // 10
+                Vertex(vec3f( 1, -1, z), vec2f(1.0, 0.0)), // 11
+
+                Vertex(vec3f(-1, -1, -z), vec2f(0.0, 1.0)),// 12
+                Vertex(vec3f( 1, -1,  z), vec2f(1.0, 0.0)),// 13
+                Vertex(vec3f( 1, -1, -z), vec2f(1.0, 1.0)) // 14
+            ]);
+            // dfmt on
             break;
         case BlockFace.left:
-            verts ~= Vertex(vec3f(-1, -1, -1), vec2f(0.0, 0.0));
-            verts ~= Vertex(vec3f(-1, -1, 1), vec2f(0.0, 1.0));
-            verts ~= Vertex(vec3f(-1, 1, 1), vec2f(1.0, 1.0));
-            verts ~= Vertex(vec3f(-1, 1, -1), vec2f(1.0, 0.0));
+            // TODO: fix UVs so they are not mirrored on the Y axis
+            // dfmt off
+            builder.push([
+                Vertex(vec3f(-1,  1,  z), vec2f(0.0, 1.0)), // 17
+                Vertex(vec3f(-1, -1,  z), vec2f(0.0, 0.0)), // 16
+                Vertex(vec3f(-1, -1, -z), vec2f(1.0, 0.0)), // 15
+
+                Vertex(vec3f(-1,  1, -z), vec2f(1.0, 1.0)), // 18
+                Vertex(vec3f(-1,  1,  z), vec2f(0.0, 1.0)), // 17
+                Vertex(vec3f(-1, -1, -z), vec2f(1.0, 0.0)), // 15
+            ]);
+            // dfmt on
             break;
         case BlockFace.right:
-            verts ~= Vertex(vec3f(1, -1, -1), vec2f(0.0, 0.0));
-            verts ~= Vertex(vec3f(1, 1, -1), vec2f(0.0, 1.0));
-            verts ~= Vertex(vec3f(1, 1, 1), vec2f(1.0, 1.0));
-            verts ~= Vertex(vec3f(1, -1, 1), vec2f(1.0, 0.0));
+            // TODO: fix UVs so they are not mirrored on the Y axis
+            // dfmt off
+            builder.push([
+                Vertex(vec3f( 1, -1, -z), vec2f(0.0, 1.0)), // 19
+                Vertex(vec3f( 1,  1, -z), vec2f(0.0, 0.0)), // 20
+                Vertex(vec3f( 1, 1, z), vec2f(1.0, 0.0)), // 21
+
+                Vertex(vec3f(1,  -1, -z), vec2f(0.0, 0.0)), // 22
+                Vertex(vec3f(1,   1,  z), vec2f(0.0, 1.0)), // 23
+                Vertex(vec3f(1,  -1,  z), vec2f(1.0, 0.0)), // 24
+            ]);
+            // dfmt on
+            break;
+        default:
             break;
         }
 
-        return verts;
+        this._faces ~= face;
     }
 
     /++
         Add multiple faces to be rendered to the block mesh.
      +/
-    public void addFaces(BlockFace[] faces)
+    public void buildFaces(BlockFace[] faces)
     {
         foreach (face; faces)
         {
-            this.addFace(face);
+            this.buildFace(face);
         }
-    }
-
-    /++
-        Add a single face to the block mesh
-     +/
-    public void addFace(BlockFace face)
-    {
-        auto verts = verticesForFace(face);
-        GLuint[] indexes;
-
-        final switch (face)
-        {
-        case BlockFace.front:
-            indexes ~= [0, 1, 2, 0, 2, 3];
-            break;
-        case BlockFace.back:
-            indexes ~= [4, 5, 6, 4, 6, 7];
-            break;
-        case BlockFace.top:
-            indexes ~= [8, 9, 10, 8, 10, 11];
-            break;
-        case BlockFace.bottom:
-            indexes ~= [12, 13, 14, 12, 14, 15];
-            break;
-        case BlockFace.left:
-            indexes ~= [20, 21, 22, 20, 22, 23];
-            break;
-        case BlockFace.right:
-            indexes ~= [16, 17, 18, 16, 18, 19];
-            break;
-        }
-
-        this._faces ~= face;
-
-        this._vertices ~= verts;
-        this._indices ~= indexes;
     }
 }

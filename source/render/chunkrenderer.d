@@ -1,45 +1,63 @@
 module render.chunkrenderer;
 
-import engine.primitives;
 import engine.shader;
 import render.blockmesh;
-import world.blockdata;
 
-import std.stdio;
-import std.conv : to;
-import std.algorithm : canFind;
-import dplug.math.vector;
 import bindbc.opengl;
 
 class ChunkRenderer
 {
-    private BlockMesh[] meshes;
-    public Block[] chunk;
+    import std.conv : to;
+    import world.blockdata : Block, BlockType;
+    import engine.primitives : Vertex;
 
-    // GL internals
-    private GLuint vao; // vertex array
-    private GLuint vbo; // vertex buffer object (sent to gpu)
-    private GLuint ebo;
+    private enum chunkWidth = 5;
+    private enum chunkHeight = 4;
+    private enum chunkDepth = 4;
 
+    private ubyte[chunkDepth][chunkHeight][chunkWidth] chunk;
+
+    private Shader shader;
+    public BlockMesh mesh;
     private Vertex[] vertices;
-    private GLuint[] indices;
 
-    public void generateChunk(float xDepth, float yDepth, float zDepth)
+    private GLuint vao;
+    private GLuint vbo;
+
+    public this()
     {
-        Block block;
+        this.mesh = new BlockMesh();
+    }
 
-        for (float x = 0; x < xDepth; x++)
+    public void generate()
+    {
+        ubyte block = 1;
+        // Generate a mesh
+        this.mesh.buildFace(BlockFace.front);
+        this.mesh.buildFace(BlockFace.bottom);
+        this.mesh.buildFace(BlockFace.top);
+        //this.mesh.buildFace(BlockFace.back);
+        this.mesh.buildFace(BlockFace.left);
+        //this.mesh.buildFace(BlockFace.right);
+
+        foreach (x; 0 .. chunkWidth)
         {
-            for (float y = 0; y < yDepth; y++)
+            foreach (y; 0 .. chunkHeight)
             {
-                for (float z = 0; z < zDepth; z++)
+                foreach (z; 0 .. chunkDepth)
                 {
+                    chunk[x][y][z] = block;
 
-                    block = Block(BlockType.cobble, true, vec3f(x, y, z));
-                    if (!chunk.canFind(block))
+                    // Loop through the vertices
+                    foreach (ref vtx; this.mesh.vertices)
                     {
-                        chunk ~= block;
+                        vtx.position.x += x;
+                        vtx.position.y += y;
+                        vtx.position.z += z;
                     }
+
+                    vertices ~= this.mesh.vertices;
+                    
                 }
             }
         }
@@ -51,46 +69,13 @@ class ChunkRenderer
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
 
-        // Generate meshes
-        // TODO: be smart and check for neighbor blocks and only render visible faces
-
-        foreach (Block block; chunk)
-        {
-            BlockMesh bmesh;
-            bmesh.addFaces([
-                    BlockFace.top, BlockFace.right, BlockFace.left,
-                    BlockFace.bottom, BlockFace.front, BlockFace.back
-                    ]);
-
-            foreach (Vertex vtx; bmesh.vertices)
-            {
-                vtx.position.x += block.position.x + 10;
-                vtx.position.y += block.position.y + 10;
-                vtx.position.z += block.position.z + 10;
-
-                writefln("vertex pos: %f,%f,%f", vtx.position.x, vtx.position.y, vtx.position.z);
-            }
-
-            meshes ~= bmesh;
-        }
-
-        // Combine the vertices from the meshes
-        foreach (BlockMesh m; meshes)
-        {
-            vertices ~= m.vertices;
-            indices ~= m.indices;
-        }
-
+        this.generate();
+    
         // Generate and bind VBO
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, Vertex.sizeof * vertices.length,
                 vertices.ptr, GL_STATIC_DRAW);
-
-        glGenBuffers(1, &ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, GLuint.sizeof * indices.length,
-                indices.ptr, GL_STATIC_DRAW);
 
         // we have 3 floats for x, y, z position
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, Vertex.sizeof,
@@ -107,6 +92,6 @@ class ChunkRenderer
     {
         shader.use();
 
-        glDrawElements(GL_TRIANGLES, vertices.length.to!int, GL_UNSIGNED_INT, null);
+        glDrawArrays(GL_TRIANGLES, 0, vertices.length.to!int);
     }
 }
