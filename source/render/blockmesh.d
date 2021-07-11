@@ -106,13 +106,13 @@ class BlockMesh
             // TODO: fix UVs so they are not mirrored on the Y axis
             // dfmt off
             builder.push([
-                Vertex(vec3f(0, 1, 1) + offset, vec2f(0.0, 1.0)), // 17
+                Vertex(vec3f(0, 0, 0) + offset, vec2f(1.0, 0.0)), // 15
                 Vertex(vec3f(0, 0, 1) + offset, vec2f(0.0, 0.0)), // 16
-                Vertex(vec3f(0, 0, 0) + offset, vec2f(1.0, 0.0)), // 15
-
-                Vertex(vec3f(0, 1, 0) + offset, vec2f(1.0, 1.0)), // 18
                 Vertex(vec3f(0, 1, 1) + offset, vec2f(0.0, 1.0)), // 17
+
                 Vertex(vec3f(0, 0, 0) + offset, vec2f(1.0, 0.0)), // 15
+                Vertex(vec3f(0, 1, 1) + offset, vec2f(0.0, 1.0)), // 17
+                Vertex(vec3f(0, 1, 0) + offset, vec2f(1.0, 1.0)), // 18
             ]);
             // dfmt on
             break;
@@ -120,13 +120,14 @@ class BlockMesh
             // TODO: fix UVs so they are not mirrored on the Y axis
             // dfmt off
             builder.push([
-                Vertex(vec3f(1, 0, 0) + offset, vec2f(0.0, 1.0)), // 19
-                Vertex(vec3f(1, 1, 0) + offset, vec2f(0.0, 0.0)), // 20
                 Vertex(vec3f(1, 1, 1) + offset, vec2f(1.0, 0.0)), // 21
+                Vertex(vec3f(1, 1, 0) + offset, vec2f(0.0, 0.0)), // 20
+                Vertex(vec3f(1, 0, 0) + offset, vec2f(0.0, 1.0)), // 19
 
-                Vertex(vec3f(1, 0, 0) + offset, vec2f(0.0, 0.0)), // 22
-                Vertex(vec3f(1, 1, 1) + offset, vec2f(0.0, 1.0)), // 23
                 Vertex(vec3f(1, 0, 1) + offset, vec2f(1.0, 0.0)), // 24
+                Vertex(vec3f(1, 1, 1) + offset, vec2f(0.0, 1.0)), // 23
+                Vertex(vec3f(1, 0, 0) + offset, vec2f(0.0, 0.0)), // 22
+
             ]);
             // dfmt on
             break;

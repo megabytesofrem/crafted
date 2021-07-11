@@ -3,6 +3,7 @@ module render.chunkrenderer;
 import engine.shader;
 import render.blockmesh;
 
+import dplug.math.matrix;
 import dplug.math.vector;
 import bindbc.opengl;
 
@@ -21,7 +22,7 @@ class ChunkRenderer
     private ubyte[chunkWidth][chunkWidth][chunkWidth] chunk;
 
     private Shader shader;
-    public BlockMesh mesh;
+    public mat4f modelMatrix;
     private Vertex[] vertices;
 
     private GLuint vao;
@@ -29,7 +30,6 @@ class ChunkRenderer
 
     public this()
     {
-        this.mesh = new BlockMesh();
     }
 
     public void generate()
@@ -44,16 +44,18 @@ class ChunkRenderer
                     chunk[x][y][z] = block;
                     //writefln("x: %d y: %d z: %d", x, y, z);
                     writefln("%d", x);
+
                     // Loop through the vertices
-                    BlockMesh msh = new BlockMesh();
+                    BlockMesh mesh = new BlockMesh();
+
                     vec3f offset = vec3f(x, y, z);
-                    msh.buildFace(BlockFace.front, offset);
-                    msh.buildFace(BlockFace.back, offset);
-                    msh.buildFace(BlockFace.left, offset);
-                    msh.buildFace(BlockFace.right, offset);
-                    msh.buildFace(BlockFace.top, offset);
-                    msh.buildFace(BlockFace.bottom, offset);
-                    vertices ~= msh.vertices;
+                    mesh.buildFace(BlockFace.front, offset);
+                    mesh.buildFace(BlockFace.back, offset);
+                    mesh.buildFace(BlockFace.left, offset);
+                    mesh.buildFace(BlockFace.right, offset);
+                    mesh.buildFace(BlockFace.top, offset);
+                    mesh.buildFace(BlockFace.bottom, offset);
+                    vertices ~= mesh.vertices;
                     
                 }
             }

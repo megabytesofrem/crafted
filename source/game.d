@@ -44,17 +44,17 @@ class GameWindow : Window
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
 
-        t = Texture.loadBitmap("textures/cobble.bmp");
+        t = Texture.loadBitmap("textures/brick.bmp");
 
         cam = Camera(80.0f, this.width, this.height);
-        cam.lookAt(vec3f(0, 0, 3), vec3f(0, 0, 0), vec3f(0, 1, 0));
+        cam.lookAt(vec3f(0, 5, 0), vec3f(0, 10, 0), cam.up);
 
         //mat4f rotate = mat4f.rotateZ(toRadians(-45.0f));
         writeln(chunkRender);
-        chunkRender.mesh.modelMatrix = mat4f.identity();
-        chunkRender.mesh.modelMatrix.scale(vec3f(0.2f, 0.2f, 0.2f));
+        chunkRender.modelMatrix = mat4f.identity();
+        chunkRender.modelMatrix.scale(vec3f(0.2f, 0.2f, 0.2f));
 
-        mat4f mvp = cam.projection * cam.view * chunkRender.mesh.modelMatrix;
+        mat4f mvp = cam.projection * cam.view * chunkRender.modelMatrix;
 
         mainShader.use();
         mainShader.setUniform("mvp", mvp);
@@ -121,7 +121,7 @@ class GameWindow : Window
         // Camera stuff
         cam.lookAtCamera();
 
-        mat4f mvp = cam.projection * cam.view * chunkRender.mesh.modelMatrix;
+        mat4f mvp = cam.projection * cam.view * chunkRender.modelMatrix;
         mainShader.setUniform("mvp", mvp);
 
 
