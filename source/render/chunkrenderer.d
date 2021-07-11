@@ -14,9 +14,9 @@ class ChunkRenderer
     import world.blockdata : Block, BlockType;
     import engine.primitives : Vertex;
 
-    private enum chunkWidth = 2;
-    private enum chunkHeight = 2;
-    private enum chunkDepth = 1;
+    private enum chunkWidth = 5;
+    private enum chunkHeight = 5;
+    private enum chunkDepth = 5;
 
     private ubyte[chunkWidth][chunkWidth][chunkWidth] chunk;
 
@@ -35,40 +35,28 @@ class ChunkRenderer
     public void generate()
     {
         ubyte block = 1;
-        // Generate a mesh
-        this.mesh.buildFace(BlockFace.front);
-        // this.mesh.buildFace(BlockFace.bottom);
-        // this.mesh.buildFace(BlockFace.top);
-        //this.mesh.buildFace(BlockFace.back);
-        // this.mesh.buildFace(BlockFace.left);
-        // this.mesh.buildFace(BlockFace.right);
-
-        for (int z = 0; z < chunkWidth; z++)
+        for (int z = 0; z < chunkDepth; z++)
         {
-            for (int y = 0; y < chunkWidth; y++)
+            for (int y = 0; y < chunkHeight; y++)
             {
                 for (int x = 0; x < chunkWidth; x++)
                 {
                     chunk[x][y][z] = block;
                     //writefln("x: %d y: %d z: %d", x, y, z);
-
+                    writefln("%d", x);
                     // Loop through the vertices
-                    foreach (ref vtx; this.mesh.vertices)
-                    {
-                        vtx.position.x += x;
-                        vtx.position.y += y;
-                        vtx.position.z += z;
-                    }
-
-                    vertices ~= this.mesh.vertices;
+                    BlockMesh msh = new BlockMesh();
+                    vec3f offset = vec3f(x, y, z);
+                    msh.buildFace(BlockFace.front, offset);
+                    msh.buildFace(BlockFace.back, offset);
+                    msh.buildFace(BlockFace.left, offset);
+                    msh.buildFace(BlockFace.right, offset);
+                    msh.buildFace(BlockFace.top, offset);
+                    msh.buildFace(BlockFace.bottom, offset);
+                    vertices ~= msh.vertices;
                     
                 }
             }
-        }
-
-        foreach (vtx; vertices)
-        {
-            writefln("v: %f\t%f\t%f", vtx.position.x, vtx.position.y, vtx.position.z);
         }
     }
 

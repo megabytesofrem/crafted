@@ -35,7 +35,7 @@ class BlockRenderer
 
         // this.mesh.buildFace(BlockFace.front);
         // this.mesh.buildFace(BlockFace.bottom);
-        this.mesh.buildFace(BlockFace.top);
+        //this.mesh.buildFace(BlockFace.top);
         // this.mesh.buildFace(BlockFace.back);
         // this.mesh.buildFace(BlockFace.left);
         //this.mesh.buildFace(BlockFace.right);
